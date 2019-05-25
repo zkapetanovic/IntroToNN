@@ -33,13 +33,48 @@ class TextLoader():
     def __init__(self, filename=None, batch_size=None, seq_len=None):
         
         if filename != None:
-            tex
-
-
-                
-    
-    def object_init(self, directory, batch_size, seq_len):
+            self.text = self.load_file(filename)
         
+        self.chars = self.get_characters(text)
+        self.char_to_int = self.char2int(self.chars)
+        self.num_chars = len(self.text)
+        self.num_vocab = len(self.chars)
+        
+        X, Y = gen_data_set(self.text, seq_len, self.num_chars, self.char_to_int, self.chars)
+        
+        process_data_set(X, Y, seq_len, self.num_vocab)
+
+    def load_file(self, filename):
+        text = io.open(filename, encoding='utf-8').read().lower()
+        return text
     
-    def process_text(self):
+    def get_characters(self, text):
+        chars = sorted(list(set(text)))
+        return chars
+    
+    def char2int(slef, chars)
+        char_to_int = dict((c,i) for i, c in enumerate(chars))
+        return char_to_int
+    
+    def gen_data_set(self, text, seq_len, num_chars, char_to_int, char):
+
+        X, Y = [], []
+
+        for i in range(0, num_chars-seq_len, 1):
+            in_ = text[i: i + seq_len]
+            out_ = text[i + seq_len]
+            X.append(char_to_int[c] for c in in_)
+            Y.append(char_to_int[out_])
+
+        print('Number of Training Examples:', len(X))
+
+        return X, Y
+    
+    def process_data_set(self, X, Y, seq_len, num_vocab):
+        X_data = np.reshape(X, (len(X), seq_len),1)
+        X_data = X_data/num_vocab
+        
+        Y_data = np_utils.to_categorical(Y)
+        
+        return X_data, Y_data
         
