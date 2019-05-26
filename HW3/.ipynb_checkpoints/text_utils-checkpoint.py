@@ -3,7 +3,8 @@ import os
 import collections
 from six.moves import cPickle
 import numpy as np
-
+import io
+from tqdm import tnrange, trange
 """
 Implement a class object that should have the following functions:
 
@@ -32,14 +33,47 @@ This function should be able to do:
 class TextLoader():
     def __init__(self, filename=None, batch_size=None, seq_len=None):
         
-        if filename != None:
-            text = open('shakespeare.txt')
-
-
-                
-    
-    def object_init(self, directory, batch_size, seq_len):
+        if filename is not None:
+            self.text = self.load_file(filename)
         
+        self.chars = self.get_characters(self.text)
+        self.char_to_int = self.char_2_int(self.chars)
+        self.num_chars = len(self.text)
+        self.num_vocab = len(self.chars)
+        self.X, self.Y = self.gen_data_set(self.text, seq_len, self.num_chars, self.char_to_int, self.chars)
+        
+        self.X_train, self.Y_train = self.process_data_set(self.X, self.Y, seq_len, self.num_vocab)
+    def load_file(self, filename):
+        text = io.open(filename, encoding='utf-8').read().lower()
+        return text
     
-    def process_text(self):
+    def get_characters(self, text):
+        chars = sorted(list(set(text)))
+        return chars
+    
+    def char_2_int(slef, chars):
+        char_to_int = dict((c,i) for i, c in enumerate(chars))
+        return char_to_int
+    
+    def gen_data_set(self, text, seq_len, num_chars, char_to_int, char):
+
+        X, Y = [], []
+
+        for i in trange(0, num_chars-seq_len, 1):
+            in_ = text[i: i + seq_len]
+            out_ = text[i + seq_len]
+            X.append([char_to_int[c] for c in in_])
+            Y.append(char_to_int[out_])
+
+        print('Number of Training Examples:', len(X))
+
+        return X, Y
+    
+    def process_data_set(self, X, Y, seq_len, num_vocab):
+        X_data = np.reshape(X, (len(X), seq_len,1))
+        X_data = X_data/float(num_vocab)
+        
+        #Y_data = np_utils.to_categorical(Y)
+        
+        return X_data, np.reshape(Y, (len(Y), -1))
         
